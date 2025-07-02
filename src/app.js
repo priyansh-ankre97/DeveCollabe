@@ -2,18 +2,47 @@ const express = require("express");
 const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
+const bcrypt = require("bcrypt");
+const {
+  signupValidationData,
+  loginValidationData,
+} = require("./utils/validation");
 const PORT_NUMBER = 7777;
 
 app.use(express.json());
 
 //add user
 app.post("/signup", async (req, res) => {
-  const user = new User(req.body);
   try {
+    signupValidationData(req);
+    const data = req.body;
+    const plaintextPassword = data?.password;
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(plaintextPassword, saltRounds);
+    const user = new User({ ...data, password: passwordHash });
     await user.save();
     res.send("user added successfully!");
   } catch (err) {
-    res.status(400).send("error in adding user : " + err.message);
+    res.status(400).send("Error : " + err.message);
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    loginValidationData(req);
+    const { emailId, password } = req.body;
+    const user = await User.findOne({ emailId });
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!user) {
+      throw new Error("Invalid Credentials");
+    }
+    if (passwordMatch) {
+      res.send("Login successful");
+    } else {
+      throw new Error("Invalid Credentials");
+    }
+  } catch (err) {
+    res.status(400).send("Error : " + err.message);
   }
 });
 
