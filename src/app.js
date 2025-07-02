@@ -13,7 +13,7 @@ app.post("/signup", async (req, res) => {
     await user.save();
     res.send("user added successfully!");
   } catch (err) {
-    res.status(400).send("error in adding user : " + err);
+    res.status(400).send("error in adding user : " + err.message);
   }
 });
 
@@ -28,7 +28,7 @@ app.get("/user", async (req, res) => {
       res.status(404).send("User not found");
     }
   } catch (error) {
-    res.status(400).send("Something went wrong : " + err);
+    res.status(400).send("Something went wrong : " + error.message);
   }
 });
 
@@ -42,7 +42,7 @@ app.get("/feed", async (req, res) => {
       res.status(404).send("Users not found");
     }
   } catch (error) {
-    res.status(400).send("Something went wrong : " + err);
+    res.status(400).send("Something went wrong : " + error.message);
   }
 });
 
@@ -53,18 +53,27 @@ app.delete("/user", async (req, res) => {
     await User.findByIdAndDelete(userId);
     res.send("User deleted successfully");
   } catch (error) {
-    res.status(400).send("Something went wrong : " + err);
+    res.status(400).send("Deleteion failed : " + error.message);
   }
 });
 
 //update a user in a database
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId;
+app.patch("/user/:userId", async (req, res) => {
+  const ALLOWED_KEYS = ["age", "skills", "photoUrl", "about"];
+  const userId = req.params.userId;
+  const data = req.body;
   try {
-    await User.findByIdAndUpdate(userId, req.body);
-    res.send("User updated successfully");
+    const allowedUserData = Object.keys(data).every((key) =>
+      ALLOWED_KEYS.includes(key)
+    );
+    if (allowedUserData) {
+      await User.findByIdAndUpdate(userId, data, { runValidators: true });
+      res.send("User updated successfully");
+    } else {
+      throw new Error("user cannot be updated");
+    }
   } catch (error) {
-    res.status(400).send("Something went wrong : " + err);
+    res.status(400).send("Update failed : " + error.message);
   }
 });
 
