@@ -3,13 +3,17 @@ const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const {
   signupValidationData,
   loginValidationData,
 } = require("./utils/validation");
 const PORT_NUMBER = 7777;
+const SECRET_KEY = "!devCollab@765";
 
 app.use(express.json());
+app.use(cookieParser());
 
 //add user
 app.post("/signup", async (req, res) => {
@@ -37,6 +41,10 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid Credentials");
     }
     if (passwordMatch) {
+      const token = jwt.sign({ _id: user._id }, SECRET_KEY);
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 900000),
+      });
       res.send("Login successful");
     } else {
       throw new Error("Invalid Credentials");
@@ -58,6 +66,25 @@ app.get("/user", async (req, res) => {
     }
   } catch (error) {
     res.status(400).send("Something went wrong : " + error.message);
+  }
+});
+
+//get profile
+app.get("/profile", async (req, res) => {
+  try {
+    const token = req.cookies?.token;
+    if (!token) {
+      throw new Error("Token not found");
+    }
+    const decodedData = jwt.verify(token, SECRET_KEY);
+    const { _id } = decodedData;
+    const user = await User.findById(_id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    res.send(user);
+  } catch (error) {
+    res.status(400).send("ERROR : " + error.message);
   }
 });
 
