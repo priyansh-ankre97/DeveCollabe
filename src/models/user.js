@@ -67,7 +67,7 @@ const userSchema = new Schema(
       type: String,
       minLength: 10,
       maxLength: 500,
-      default: "I am a developer",
+      // default: "I am a developer",
     },
   },
   { timestamps: true }

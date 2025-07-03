@@ -17,4 +17,35 @@ const loginValidationData = (req) => {
   }
 };
 
-module.exports = { signupValidationData, loginValidationData };
+const profileEditValidationData = (req) => {
+  const ALLOWED_FIELDS = [
+    "firstName",
+    "lastName",
+    "age",
+    "gender",
+    "skills",
+    "photoUrl",
+    "about",
+  ];
+  const data = req.body;
+  for (const key in data) {
+    if (!ALLOWED_FIELDS.includes(key)) {
+      throw new Error("Invalid Edit field");
+    }
+  }
+};
+
+const strongpasswordValidationData = (oldPassword, newPassword) => {
+  if (oldPassword === newPassword) {
+    throw new Error("New password cannot be same as old password");
+  } else if (!validator.isStrongPassword(newPassword)) {
+    throw new Error("Password is not strong");
+  }
+};
+
+module.exports = {
+  signupValidationData,
+  loginValidationData,
+  profileEditValidationData,
+  strongpasswordValidationData,
+};
