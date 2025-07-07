@@ -5,11 +5,10 @@ const User = require("../models/user");
 const { authUser } = require("../middlewares/auth");
 
 //send connection request
-router.post("/request/:status/:toUserId", authUser, async (req, res) => {
+router.post("/request/send/:status/:toUserId", authUser, async (req, res) => {
   try {
     const fromUserId = req.user._id;
-    const toUserId = req.params.toUserId;
-    const status = req.params.status;
+    const { status, toUserId } = req.params;
     const connectionRequest = new ConnectionRequest({
       fromUserId,
       toUserId,
@@ -45,5 +44,41 @@ router.post("/request/:status/:toUserId", authUser, async (req, res) => {
     res.status(400).send("ERROR : " + error.message);
   }
 });
+
+router.post(
+  "/request/review/:status/:requestId",
+  authUser,
+  async (req, res) => {
+    try {
+      const loggedInUser = req.user;
+      const { status, requestId } = req.params;
+      //validate status
+      const ALLOWED_FIELDS = ["accepted", "rejected"];
+      if (!ALLOWED_FIELDS.includes(status)) {
+        throw new Error("Invalid status");
+      }
+      //find user with status = interested , touserId = loggedInUserId, _id = requestId
+      const connectionRequest = await ConnectionRequest.findOne({
+        _id: requestId,
+        toUserId: loggedInUser._id,
+        status: "interested",
+      });
+      if (!connectionRequest) {
+        throw new Error("Connection request not found");
+      }
+      //update status
+      connectionRequest.status = status;
+      //save connection request
+      await connectionRequest.save();
+      //send response
+      res.json({
+        message: "Connection request updated successfully",
+        data: connectionRequest,
+      });
+    } catch (error) {
+      res.status(400).send("ERROR : " + error.message);
+    }
+  }
+);
 
 module.exports = router;
