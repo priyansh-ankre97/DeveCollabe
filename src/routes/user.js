@@ -9,7 +9,7 @@ router.get("/user/request", authUser, async (req, res) => {
     const connectionRequest = await ConnectionRequest.find({
       toUserId: loggedInUser._id,
       status: "interested",
-    });
+    }).populate("fromUserId", "firstName lastName photoUrl about skills");
     res.json({
       message: "Connection request fetched successfully",
       data: connectionRequest,
