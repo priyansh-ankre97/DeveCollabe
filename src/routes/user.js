@@ -1,6 +1,7 @@
 const express = require("express");
 const { authUser } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
+const User = require("../models/user");
 const router = express.Router();
 
 const POPULATE_FIELDS = "firstName lastName photoUrl about skills";
@@ -40,6 +41,38 @@ router.get("/user/connections", authUser, async (req, res) => {
     res.json({
       message: "Connection request fetched successfully",
       data,
+    });
+  } catch (error) {
+    res.status(400).send({ error: error.message });
+  }
+});
+
+router.get("/user/feed", authUser, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const skip = (page - 1) * limit;
+    const connectionRequest = await ConnectionRequest.find({
+      $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
+    });
+    const hideUserFromFeed = new Set();
+    connectionRequest.forEach((request) => {
+      hideUserFromFeed.add(request.fromUserId);
+      hideUserFromFeed.add(request.toUserId);
+    });
+    const users = await User.find({
+      $and: [
+        { _id: { $nin: Array.from(hideUserFromFeed) } },
+        { _id: { $ne: loggedInUser._id } },
+      ],
+    })
+      .select(POPULATE_FIELDS)
+      .skip(skip)
+      .limit(limit);
+    res.json({
+      message: "Connection request fetched successfully",
+      data: users,
     });
   } catch (error) {
     res.status(400).send({ error: error.message });
