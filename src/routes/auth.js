@@ -17,9 +17,9 @@ router.post("/signup", async (req, res) => {
     const passwordHash = await bcrypt.hash(plaintextPassword, saltRounds);
     const user = new User({ ...data, password: passwordHash });
     await user.save();
-    res.send("user added successfully!");
-  } catch (err) {
-    res.status(400).send("Error : " + err.message);
+    res.json({ message: "Signup successful", data: user });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -40,12 +40,12 @@ router.post("/login", async (req, res) => {
       res.cookie("token", token, {
         expires: new Date(Date.now() + 8 * 3600000),
       });
-      res.send("Login successful");
+      res.json({ message: "Login successful", data: user });
     } else {
       throw new Error("Invalid Credentials");
     }
-  } catch (err) {
-    res.status(400).send("Error : " + err.message);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -53,9 +53,9 @@ router.post("/logout", async (req, res) => {
   try {
     // res.clearCookie("token");
     res.cookie("token", null, { expires: new Date(Date.now()) });
-    res.send("Logout successful");
-  } catch (err) {
-    res.status(400).send("Error : " + err.message);
+    res.send({ message: "Logout successful" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

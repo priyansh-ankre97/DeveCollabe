@@ -18,7 +18,7 @@ router.get("/user/request", authUser, async (req, res) => {
       data: connectionRequest,
     });
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -43,7 +43,7 @@ router.get("/user/connections", authUser, async (req, res) => {
       data,
     });
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -76,7 +76,7 @@ router.get("/user/feed", authUser, async (req, res) => {
       data: users,
     });
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 });
 

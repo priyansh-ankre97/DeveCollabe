@@ -41,7 +41,7 @@ router.post("/request/send/:status/:toUserId", authUser, async (req, res) => {
       data,
     });
   } catch (error) {
-    res.status(400).send("ERROR : " + error.message);
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -76,7 +76,7 @@ router.post(
         data: connectionRequest,
       });
     } catch (error) {
-      res.status(400).send("ERROR : " + error.message);
+      res.status(400).json({ error: error.message });
     }
   }
 );
