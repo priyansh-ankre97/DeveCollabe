@@ -16,8 +16,14 @@ router.post("/signup", async (req, res) => {
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(plaintextPassword, saltRounds);
     const user = new User({ ...data, password: passwordHash });
-    await user.save();
-    res.json({ message: "Signup successful", data: user });
+    const userData = await user.save();
+    //create token
+    const token = await userData.getJwtToken();
+    //send cookie
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 8 * 3600000),
+    });
+    res.json({ message: "Signup successful", data: userData });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

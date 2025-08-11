@@ -4,7 +4,7 @@ const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
 const router = express.Router();
 
-const POPULATE_FIELDS = "firstName lastName photoUrl about skills";
+const POPULATE_FIELDS = "firstName lastName photoUrl about skills gender age";
 
 router.get("/user/request", authUser, async (req, res) => {
   try {
