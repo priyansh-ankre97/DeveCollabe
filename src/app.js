@@ -2,7 +2,7 @@ const express = require("express");
 const connectDB = require("./config/database");
 const app = express();
 const cookieParser = require("cookie-parser");
-const PORT_NUMBER = 7777;
+const PORT_NUMBER = process.env.PORT;
 const cors = require("cors");
 
 app.use(
